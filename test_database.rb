@@ -18,8 +18,8 @@ class TestDatabase
   # It drops any of them if they already exist
   def setup
     setup_test_database
-    conn.pool.internal_metadata.create_table
-    conn.pool.schema_migration.create_table
+    conn.pool.try(:internal_metadata)&.create_table
+    conn.pool.try(:schema_migration)&.create_table
   end
 
   # Creates the #{@database} database and the comments table in it.
@@ -60,14 +60,12 @@ class TestDatabase
 
   def conn
     @conn ||= ActiveRecord::Base.mysql2_connection(
-
-        host: @config['hostname'],
-        username: @config['username'],
-        password: @config['password'],
-        database: @config['database'],
-        adapter: @config['adapter'] || "mysql2",
-        reconnect: true,
-        use_metadata_table: false
+      host: @config['hostname'],
+      username: @config['username'],
+      password: @config['password'],
+      database: @config['database'],
+      adapter: @config['adapter'] || 'mysql2',
+      reconnect: true
     )
   end
 end
