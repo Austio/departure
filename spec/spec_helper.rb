@@ -50,8 +50,8 @@ RSpec.configure do |config|
   # see the state of the previous one
   config.before(:each) do |example|
     if example.metadata[:integration]
-      TEST_DATABASE.setup
       ActiveRecord::Base.connection_pool.disconnect!
+      TEST_DATABASE.setup
     end
   end
 
