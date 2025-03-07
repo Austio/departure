@@ -39,9 +39,9 @@ module Departure
             end
           end
 
-          ActiveRecord::ConnectionAdapters.register "percona",
-                                                    "ActiveRecord::ConnectionAdapters::DepartureAdapter",
-                                                    "active_record/connection_adapters/percona_adapter"
+          ActiveRecord::ConnectionAdapters.register 'percona',
+                                                    'ActiveRecord::ConnectionAdapters::DepartureAdapter',
+                                                    'active_record/connection_adapters/percona_adapter'
         end
       end
     end
