@@ -70,11 +70,22 @@ class TestDatabase
   end
 
   def conn
-    @conn ||= ActiveRecord::Base.mysql2_connection(
+    return @conn if defined? @conn
+
+    config = {
       host: @config['hostname'],
       username: @config['username'],
       password: @config['password'],
+      database: @config['database'],
       reconnect: true
-    )
+    }
+
+    if ActiveRecord::Base.respond_to?(:mysql2_connection)
+      @conn = ActiveRecord::Base.mysql2_connection(config)
+    else
+      config[:adapter] = @config['adapter'] || "mysql2"
+
+      @conn = ActiveRecord::Base.establish_connection(config).connection
+    end
   end
 end
