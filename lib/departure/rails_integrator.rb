@@ -27,6 +27,10 @@ module Departure
             end
           end
         end
+
+        def establish_connection(**config)
+          ActiveRecord::Base.mysql2_connection(**config)
+        end
       end
     end
 
@@ -42,6 +46,10 @@ module Departure
           ActiveRecord::ConnectionAdapters.register 'percona',
                                                     'ActiveRecord::ConnectionAdapters::DepartureAdapter',
                                                     'active_record/connection_adapters/percona_adapter'
+        end
+
+        def establish_connection(**config)
+          ActiveRecord::Base.establish_connection(**config)
         end
       end
     end
