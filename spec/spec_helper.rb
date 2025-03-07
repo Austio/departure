@@ -34,7 +34,7 @@ ActiveRecord::Base.establish_connection(
 
 MIGRATION_FIXTURES = File.expand_path('../fixtures/migrate/', __FILE__)
 
-test_database = TestDatabase.new(db_config)
+TEST_DATABASE = TestDatabase.new(db_config)
 
 RSpec.configure do |config|
   config.include TableMethods
@@ -50,8 +50,8 @@ RSpec.configure do |config|
   # see the state of the previous one
   config.before(:each) do |example|
     if example.metadata[:integration]
-      test_database.setup
       ActiveRecord::Base.connection_pool.disconnect!
+      TEST_DATABASE.setup
     end
   end
 

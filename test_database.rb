@@ -18,7 +18,8 @@ class TestDatabase
   # It drops any of them if they already exist
   def setup
     setup_test_database
-    drop_and_create_schema_migrations_table
+    conn.pool.internal_metadata.create_table
+    conn.pool.schema_migration.create_table
   end
 
   # Creates the #{@database} database and the comments table in it.
@@ -26,18 +27,6 @@ class TestDatabase
   def setup_test_database
     drop_and_create_test_database
     drop_and_create_comments_table
-  end
-
-  # Creates the ActiveRecord's schema_migrations table required for
-  # migrations to work. Before, it drops the table if it already exists
-  def drop_and_create_schema_migrations_table
-    sql = [
-      "USE #{@database}",
-      'DROP TABLE IF EXISTS schema_migrations',
-      'CREATE TABLE schema_migrations ( version varchar(255) COLLATE utf8_unicode_ci NOT NULL, UNIQUE KEY unique_schema_migrations (version)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci'
-    ]
-
-    run_commands(sql)
   end
 
   private
@@ -70,11 +59,22 @@ class TestDatabase
   end
 
   def conn
-    @conn ||= ActiveRecord::Base.mysql2_connection(
+    return @conn if defined? @conn
+
+    config = {
       host: @config['hostname'],
       username: @config['username'],
       password: @config['password'],
+      database: @config['database'],
       reconnect: true
-    )
+    }
+
+    if ActiveRecord::Base.respond_to?(:mysql2_connection)
+      @conn = ActiveRecord::Base.mysql2_connection(config)
+    else
+      config[:adapter] = @config['adapter'] || "mysql2"
+
+      @conn = ActiveRecord::Base.establish_connection(config).connection
+    end
   end
 end
