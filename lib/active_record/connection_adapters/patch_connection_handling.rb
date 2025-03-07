@@ -10,30 +10,8 @@ module ActiveRecord
         config = config.dup if config.frozen?
         config[:username] = 'root'
       end
-      mysql2_connection = mysql2_connection(config)
 
-      connection_details = Departure::ConnectionDetails.new(config)
-      verbose = ActiveRecord::Migration.verbose
-      sanitizers = [
-        Departure::LogSanitizers::PasswordSanitizer.new(connection_details)
-      ]
-      percona_logger = Departure::LoggerFactory.build(sanitizers: sanitizers, verbose: verbose)
-      cli_generator = Departure::CliGenerator.new(connection_details)
-
-      runner = Departure::Runner.new(
-        percona_logger,
-        cli_generator,
-        mysql2_connection
-      )
-
-      connection_options = { mysql_adapter: mysql2_connection }
-
-      ConnectionAdapters::DepartureAdapter.new(
-        runner,
-        logger,
-        connection_options,
-        config
-      )
+      Departure::RailsIntegrator.for_current.create_connection_adapter(**config)
     end
   end
 end

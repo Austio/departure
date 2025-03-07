@@ -65,6 +65,8 @@ module Departure
     class V7_2 < BaseIntegration
       class << self
         def register_integrations
+          require 'active_record/connection_adapters/rails_7_2_departure_adapter'
+
           ActiveSupport.on_load(:active_record) do
             ActiveRecord::Migration.class_eval do
               include Departure::Migration
@@ -73,7 +75,7 @@ module Departure
 
           ActiveRecord::ConnectionAdapters.register 'percona',
                                                     'ActiveRecord::ConnectionAdapters::DepartureAdapter',
-                                                    'active_record/connection_adapters/percona_adapter'
+                                                    'active_record/connection_adapters/rails_7_2_departure_adapter'
         end
 
         def create_connection_adapter(**config)
@@ -94,7 +96,10 @@ module Departure
           )
 
           connection_options = { mysql_adapter: mysql2_adapter }
-          ActiveRecord::ConnectionAdapters::DepartureAdapter.new(
+
+          binding.pry
+
+          ActiveRecord::ConnectionAdapters::Rails72DepartureAdapter.new(
             runner,
             percona_logger,
             connection_options,
