@@ -5,8 +5,12 @@ module Departure
     extend Forwardable
 
     class << self
+      def current_version
+        ActiveRecord::VERSION
+      end
+
       def for_current
-        self.for(ActiveRecord::VERSION)
+        self.for(current_version)
       end
 
       def for(ar_version)
@@ -28,8 +32,32 @@ module Departure
           end
         end
 
-        def establish_connection(**config)
-          ActiveRecord::Base.mysql2_connection(**config)
+        # ActiveRecord::ConnectionAdapters::Mysql2Adapter
+        def create_connection_adapter(**config)
+          mysql2_adapter = ActiveRecord::Base.mysql2_connection(config)
+
+          connection_details = Departure::ConnectionDetails.new(config)
+          verbose = ActiveRecord::Migration.verbose
+          sanitizers = [
+            Departure::LogSanitizers::PasswordSanitizer.new(connection_details)
+          ]
+          percona_logger = Departure::LoggerFactory.build(sanitizers: sanitizers, verbose: verbose)
+          cli_generator = Departure::CliGenerator.new(connection_details)
+
+          runner = Departure::Runner.new(
+            percona_logger,
+            cli_generator,
+            mysql2_adapter
+          )
+
+          connection_options = { mysql_adapter: mysql2_adapter }
+
+          ActiveRecord::ConnectionAdapters::DepartureAdapter.new(
+            runner,
+            percona_logger,
+            connection_options,
+            config
+          )
         end
       end
     end
@@ -48,8 +76,30 @@ module Departure
                                                     'active_record/connection_adapters/percona_adapter'
         end
 
-        def establish_connection(**config)
-          ActiveRecord::Base.establish_connection(**config)
+        def create_connection_adapter(**config)
+          mysql2_adapter = ActiveRecord::ConnectionAdapters::Mysql2Adapter.new(config.merge(adapter: "mysql2"))
+
+          connection_details = Departure::ConnectionDetails.new(config)
+          verbose = ActiveRecord::Migration.verbose
+          sanitizers = [
+            Departure::LogSanitizers::PasswordSanitizer.new(connection_details)
+          ]
+          percona_logger = Departure::LoggerFactory.build(sanitizers: sanitizers, verbose: verbose)
+          cli_generator = Departure::CliGenerator.new(connection_details)
+
+          runner = Departure::Runner.new(
+            percona_logger,
+            cli_generator,
+            mysql2_adapter
+          )
+
+          connection_options = { mysql_adapter: mysql2_adapter }
+          ActiveRecord::ConnectionAdapters::DepartureAdapter.new(
+            runner,
+            percona_logger,
+            connection_options,
+            config
+          )
         end
       end
     end

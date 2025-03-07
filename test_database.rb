@@ -59,7 +59,7 @@ class TestDatabase
   end
 
   def conn
-    @conn ||= ActiveRecord::Base.mysql2_connection(
+    @conn ||= Departure::RailsIntegrator.for_current.create_connection_adapter(
       host: @config['hostname'],
       username: @config['username'],
       password: @config['password'],
