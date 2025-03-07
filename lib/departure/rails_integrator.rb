@@ -74,12 +74,12 @@ module Departure
           end
 
           ActiveRecord::ConnectionAdapters.register 'percona',
-                                                    'ActiveRecord::ConnectionAdapters::DepartureAdapter',
+                                                    'ActiveRecord::ConnectionAdapters::Rails72DepartureAdapter',
                                                     'active_record/connection_adapters/rails_7_2_departure_adapter'
         end
 
         def create_connection_adapter(**config)
-          mysql2_adapter = ActiveRecord::ConnectionAdapters::Mysql2Adapter.new(config.merge(adapter: "mysql2"))
+          mysql2_adapter = ActiveRecord::ConnectionAdapters::Mysql2Adapter.new(config.merge(adapter: 'mysql2'))
 
           connection_details = Departure::ConnectionDetails.new(config)
           verbose = ActiveRecord::Migration.verbose
@@ -96,8 +96,6 @@ module Departure
           )
 
           connection_options = { mysql_adapter: mysql2_adapter }
-
-          binding.pry
 
           ActiveRecord::ConnectionAdapters::Rails72DepartureAdapter.new(
             runner,

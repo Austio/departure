@@ -1,3 +1,4 @@
+require 'pry'
 require 'bundler'
 require 'simplecov'
 # SimpleCov.start
@@ -22,6 +23,9 @@ db_config = Configuration.new
 
 # Disables/enables the queries log you see in your rails server in dev mode
 fd = ENV['VERBOSE'] ? STDOUT : '/dev/null'
+
+Departure::RailsIntegrator.for_current.register_integrations
+
 ActiveRecord::Base.logger = Logger.new(fd)
 
 ActiveRecord::Base.establish_connection(

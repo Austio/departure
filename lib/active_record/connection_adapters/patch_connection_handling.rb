@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require "active_record/connection_handling"
+
+require 'active_record/connection_handling'
 
 module ActiveRecord
   module ConnectionHandling
