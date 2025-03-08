@@ -30,6 +30,20 @@ module Departure
       @mysql_adapter.raw_connection
     end
 
+    # def respond_to_missing?(name, include_private = false)
+    #   database_adapter.respond_to?(name, include_private) || raw_connection.respond_to?(name, include_private)
+    # end
+    #
+    # def method_missing(method, *args, &block)
+    #   if database_adapter.respond_to?(method)
+    #     database_adapter.send(method, *args, &block)
+    #   elsif raw_connection.respond_to?(method)
+    #     raw_connection.send(method, *args, &block)
+    #   else
+    #     super
+    #   end
+    # end
+
     # Executes the passed sql statement using pt-online-schema-change for ALTER
     # TABLE statements, or the specified mysql adapter otherwise.
     #

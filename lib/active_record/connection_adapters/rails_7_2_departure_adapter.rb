@@ -36,8 +36,6 @@ module ActiveRecord
 
       ADAPTER_NAME = 'Percona'.freeze
 
-      def_delegators :mysql_adapter, :each_hash, :set_field_encoding
-
       def self.new_client(config)
         connection_details = Departure::ConnectionDetails.new(config)
         verbose = ActiveRecord::Migration.verbose
@@ -171,6 +169,16 @@ module ActiveRecord
       private
 
       attr_reader :mysql_adapter
+
+      def each_hash(result) # :nodoc:
+        @raw_connection.database_adapter.each_hash(result)
+      end
+
+      # Must return the MySQL error number from the exception, if the exception has an
+      # error number.
+      def error_number(exception) # :nodoc:
+        @raw_connection.database_adapter.error_number(result)
+      end
 
       def raw_execute(sql, name, async: false, allow_retry: false, materialize_transactions: true)
         log(sql, name, async: async) do |notification_payload|
