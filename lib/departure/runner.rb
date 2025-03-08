@@ -4,6 +4,11 @@ module Departure
   # It executes pt-online-schema-change commands in a new process and gets its
   # output and status
   class Runner
+
+    extend Forwardable
+
+    def_delegators :raw_connection, :execute, :escape, :close
+
     # Constructor
     #
     # @param logger [#say, #write]
@@ -16,6 +21,14 @@ module Departure
       @mysql_adapter = mysql_adapter
       @error_log_path = config.error_log_path
       @redirect_stderr = config.redirect_stderr
+    end
+
+    def database_adapter
+      @mysql_adapter
+    end
+
+    def raw_connection
+      @mysql_adapter.raw_connection
     end
 
     # Executes the passed sql statement using pt-online-schema-change for ALTER

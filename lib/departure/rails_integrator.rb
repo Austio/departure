@@ -79,30 +79,7 @@ module Departure
         end
 
         def create_connection_adapter(**config)
-          mysql2_adapter = ActiveRecord::ConnectionAdapters::Mysql2Adapter.new(config.merge(adapter: 'mysql2'))
-
-          connection_details = Departure::ConnectionDetails.new(config)
-          verbose = ActiveRecord::Migration.verbose
-          sanitizers = [
-            Departure::LogSanitizers::PasswordSanitizer.new(connection_details)
-          ]
-          percona_logger = Departure::LoggerFactory.build(sanitizers: sanitizers, verbose: verbose)
-          cli_generator = Departure::CliGenerator.new(connection_details)
-
-          runner = Departure::Runner.new(
-            percona_logger,
-            cli_generator,
-            mysql2_adapter
-          )
-
-          connection_options = { mysql_adapter: mysql2_adapter }
-
-          ActiveRecord::ConnectionAdapters::Rails72DepartureAdapter.new(
-            runner,
-            percona_logger,
-            connection_options,
-            config
-          )
+          ActiveRecord::ConnectionAdapters::Rails72DepartureAdapter.new(config)
         end
       end
     end
