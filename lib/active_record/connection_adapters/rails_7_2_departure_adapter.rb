@@ -38,7 +38,6 @@ module ActiveRecord
 
       def_delegators :mysql_adapter, :each_hash, :set_field_encoding
 
-
       def self.new_client(config)
         connection_details = Departure::ConnectionDetails.new(config)
         verbose = ActiveRecord::Migration.verbose
@@ -62,8 +61,8 @@ module ActiveRecord
 
         @config[:flags] ||= 0
 
-        if @config[:flags].kind_of? Array
-          @config[:flags].push "FOUND_ROWS"
+        if @config[:flags].is_a? Array
+          @config[:flags].push 'FOUND_ROWS'
         else
           @config[:flags] |= ::Mysql2::Client::FOUND_ROWS
         end
@@ -83,7 +82,7 @@ module ActiveRecord
       end
       alias exec_update exec_delete
 
-      def exec_insert(sql, name, binds, pk = nil, sequence_name = nil, returning: nil) # rubocop:disable Lint/UnusedMethodArgument, Metrics/Metrics/ParameterLists
+      def exec_insert(sql, name, binds, pky = nil, sequence_name = nil, returning: nil) # rubocop:disable Lint/UnusedMethodArgument, Metrics/Metrics/ParameterLists
         execute(to_sql(sql, binds), name)
       end
 
@@ -194,8 +193,8 @@ module ActiveRecord
 
       def connect
         @raw_connection = self.class.new_client(@config)
-      rescue ConnectionNotEstablished => ex
-        raise ex.set_pool(@pool)
+      rescue ConnectionNotEstablished => e
+        raise e.set_pool(@pool)
       end
 
       def reconnect

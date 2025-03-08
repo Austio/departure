@@ -62,7 +62,7 @@ module Departure
       end
     end
 
-    class V7_2 < BaseIntegration
+    class V7_2 < BaseIntegration # rubocop:disable Naming/ClassAndModuleCamelCase
       class << self
         def register_integrations
           require 'active_record/connection_adapters/rails_7_2_departure_adapter'

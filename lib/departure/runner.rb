@@ -4,7 +4,6 @@ module Departure
   # It executes pt-online-schema-change commands in a new process and gets its
   # output and status
   class Runner
-
     extend Forwardable
 
     def_delegators :raw_connection, :execute, :escape, :close
