@@ -64,8 +64,6 @@ class TestDatabase
       host: @config['hostname'],
       username: @config['username'],
       password: @config['password'],
-      database: @config['database'],
-      adapter: @config['adapter'] || 'mysql2',
       reconnect: true
     )
   end

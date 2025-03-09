@@ -139,6 +139,8 @@ GEM
     net-smtp (0.5.0)
       net-protocol
     nio4r (2.7.3)
+    nokogiri (1.18.3-arm64-darwin)
+      racc (~> 1.4)
     nokogiri (1.18.3-x86_64-linux-gnu)
       racc (~> 1.4)
     parallel (1.25.1)
@@ -260,6 +262,7 @@ DEPENDENCIES
   climate_control (~> 0.0.3)
   codeclimate-test-reporter (~> 1.0.3)
   departure!
+  mutex_m
   pry-byebug
   rails (= 7.1.3)
   rake (>= 10.0)
@@ -269,4 +272,4 @@ DEPENDENCIES
   rubocop-performance (~> 1.20.2)
 
 BUNDLED WITH
-   2.4.22
+   2.6.5
