@@ -260,9 +260,11 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal (~> 2.4.1)
+  base64
   climate_control (~> 0.0.3)
   codeclimate-test-reporter (~> 1.0.3)
   departure!
+  logger
   mutex_m
   pry-byebug
   rails (= 7.2.2.1)
