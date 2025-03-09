@@ -150,10 +150,6 @@ module ActiveRecord
         bulk_change_table(table_name, recorder.commands)
       end
 
-      # Returns the MySQL error number from the exception. The
-      # AbstractMysqlAdapter requires it to be implemented
-      def error_number(_exception); end
-
       def full_version
         @full_version ||= get_full_version
       end
@@ -176,7 +172,7 @@ module ActiveRecord
 
       # Must return the MySQL error number from the exception, if the exception has an
       # error number.
-      def error_number(exception) # :nodoc:
+      def error_number(_exception) # :nodoc:
         @raw_connection.database_adapter.error_number(result)
       end
 
