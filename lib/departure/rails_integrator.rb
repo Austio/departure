@@ -25,6 +25,8 @@ module Departure
     class BaseIntegration
       class << self
         def register_integrations
+          require 'active_record/connection_adapters/percona_adapter'
+
           ActiveSupport.on_load(:active_record) do
             ActiveRecord::Migration.class_eval do
               include Departure::Migration

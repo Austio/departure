@@ -18,8 +18,8 @@ module Departure
       @logger = logger
       @cli_generator = cli_generator
       @mysql_adapter = mysql_adapter
-      @error_log_path = config.error_log_path
-      @redirect_stderr = config.redirect_stderr
+      @error_log_path = config&.error_log_path
+      @redirect_stderr = config&.redirect_stderr
     end
 
     def database_adapter
