@@ -155,11 +155,11 @@ module ActiveRecord
       end
 
       def get_full_version # rubocop:disable Style/AccessorMethodName
-        @get_full_version ||= raw_connection.database_adapter.get_database_version.full_version_string
+        @get_full_version ||= @raw_connection.database_adapter.get_database_version.full_version_string
       end
 
       def last_inserted_id(result)
-        raw_connection.database_adapter.send(:last_inserted_id, result)
+        @raw_connection.database_adapter.send(:last_inserted_id, result)
       end
 
       private
@@ -167,13 +167,13 @@ module ActiveRecord
       attr_reader :mysql_adapter
 
       def each_hash(result, &block) # :nodoc:
-        raw_connection.database_adapter.each_hash(result, &block)
+        @raw_connection.database_adapter.each_hash(result, &block)
       end
 
       # Must return the MySQL error number from the exception, if the exception has an
       # error number.
       def error_number(_exception) # :nodoc:
-        raw_connection.database_adapter.error_number(_exception)
+        @raw_connection.database_adapter.error_number(_exception)
       end
 
       def raw_execute(sql, name, async: false, allow_retry: false, materialize_transactions: true)
@@ -193,12 +193,6 @@ module ActiveRecord
             result
           end
         end
-      end
-
-      def raw_connection
-        return @raw_connection if @raw_connection
-
-        connect
       end
 
       def connect

@@ -53,7 +53,7 @@ module Departure
         command_line = cli_generator.parse_statement(sql)
         execute(command_line)
       else
-        mysql_adapter.execute(sql)
+        database_adapter.execute(sql)
       end
     end
 
