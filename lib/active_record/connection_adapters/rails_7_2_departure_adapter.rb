@@ -76,7 +76,7 @@ module ActiveRecord
 
       def exec_delete(sql, name, binds)
         execute(to_sql(sql, binds), name)
-        mysql_adapter.raw_connection.affected_rows
+        @raw_connection.affected_rows
       end
       alias exec_update exec_delete
 
@@ -161,7 +161,6 @@ module ActiveRecord
       def last_inserted_id(result)
         @raw_connection.database_adapter.send(:last_inserted_id, result)
       end
-
 
       # Mostly a copy from ActiveRecord::ConnectionAdapters::MySQL::SchemaStatements
       # original method was not returning index names due to a return in each_hash
