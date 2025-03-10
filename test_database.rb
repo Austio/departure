@@ -7,6 +7,17 @@ require 'departure'
 # the tests.
 #
 class TestDatabase
+  def self.audit
+    result = ActiveRecord::Base.connection.execute("SHOW TABLES;")
+    puts "Tables in the database: #{result.to_a}"
+
+    result = ActiveRecord::Base.connection.execute("SHOW COLUMNS FROM comments;")
+    puts "Columns in the comments table: #{result.to_a}"
+
+    result = ActiveRecord::Base.connection.execute("SHOW INDEXES FROM comments;")
+    puts "Indexes in the comments table: #{result.to_a}"
+  end
+
   # Constructor
   #
   # @param config [Hash]
