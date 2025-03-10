@@ -5,6 +5,7 @@ require 'dummy/db/migrate/0022_add_timestamp_on_comments'
 describe Departure, integration: true do
   class Comment < ActiveRecord::Base; end
 
+  let(:db_config) { Configuration.new }
   let(:migration_paths) { [MIGRATION_FIXTURES] }
   let(:migration_context) { ActiveRecord::MigrationContext.new(migration_paths, ActiveRecord::SchemaMigration) }
   let(:migration_fixtures) { migration_context.migrations }
@@ -56,8 +57,6 @@ describe Departure, integration: true do
   end
 
   context 'when ActiveRecord is loaded' do
-    let(:db_config) { Configuration.new }
-
     it 'reconnects to the database using PerconaAdapter' do
       migration_context.run(direction, 1)
       expect(spec_config[:adapter]).to eq('percona')
@@ -114,10 +113,28 @@ describe Departure, integration: true do
   end
 
   context 'when the migration failed' do
+    before do
+      ActiveRecord::Base.establish_connection(
+        adapter: 'percona',
+        host: db_config['hostname'],
+        password: db_config['password'],
+        database: db_config['database']
+      )
+    end
+
     context 'and the migration is not an alter table statement' do
       let(:version) { 8 }
 
-      before { ActiveRecord::Base.connection.create_table(:things) }
+      before do
+        ActiveRecord::Base.establish_connection(
+          adapter: 'percona',
+          host: db_config['hostname'],
+          password: db_config['password'],
+          database: db_config['database']
+        )
+
+        ActiveRecord::Base.connection.create_table(:things)
+      end
 
       it 'raises and halts the execution' do
         expect do

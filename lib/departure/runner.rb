@@ -27,7 +27,11 @@ module Departure
     end
 
     def raw_connection
-      @mysql_adapter.raw_connection
+      database_adapter.raw_connection
+    end
+
+    def connect!
+      database_adapter.connect!
     end
 
     # def respond_to_missing?(name, include_private = false)

@@ -66,6 +66,11 @@ module ActiveRecord
         end
 
         @prepared_statements = false
+        connect
+      end
+
+      def connect!
+        @departure_runner.connect!
       end
 
       def write_query?(sql) # :nodoc:
@@ -76,7 +81,7 @@ module ActiveRecord
 
       def exec_delete(sql, name, binds)
         execute(to_sql(sql, binds), name)
-        raw_connection.affected_rows
+        @departure_runner.affected_rows
       end
       alias exec_update exec_delete
 
@@ -155,11 +160,11 @@ module ActiveRecord
       end
 
       def get_full_version # rubocop:disable Style/AccessorMethodName
-        @get_full_version ||= raw_connection.database_adapter.get_database_version.full_version_string
+        @get_full_version ||= @departure_runner.database_adapter.get_database_version.full_version_string
       end
 
       def last_inserted_id(result)
-        raw_connection.database_adapter.send(:last_inserted_id, result)
+        @departure_runner.database_adapter.send(:last_inserted_id, result)
       end
 
       private
@@ -167,17 +172,19 @@ module ActiveRecord
       attr_reader :mysql_adapter
 
       def each_hash(result, &block) # :nodoc:
-        raw_connection.database_adapter.each_hash(result, &block)
+        @departure_runner.database_adapter.each_hash(result, &block)
       end
 
       # Must return the MySQL error number from the exception, if the exception has an
       # error number.
       def error_number(_exception) # :nodoc:
-        raw_connection.database_adapter.error_number(_exception)
+        raise _exception
+        @departure_runner.database_adapter.error_number(_exception)
       end
 
       def raw_execute(sql, name, async: false, allow_retry: false, materialize_transactions: true)
         log(sql, name, async: async) do |notification_payload|
+          binding.pry
           with_raw_connection(allow_retry: allow_retry, materialize_transactions: materialize_transactions) do |conn|
             sync_timezone_changes(conn)
             result = conn.query(sql)
@@ -195,22 +202,16 @@ module ActiveRecord
         end
       end
 
-      def raw_connection
-        return @raw_connection if @raw_connection
-
-        connect
-      end
-
       def connect
-        @raw_connection = self.class.new_client(@config)
+        @departure_runner = self.class.new_client(@config)
       rescue ConnectionNotEstablished => e
         raise e.set_pool(@pool)
       end
 
       def reconnect
         @lock.synchronize do
-          @raw_connection&.close
-          @raw_connection = nil
+          @departure_runner&.close
+          @departure_runner = nil
           connect
         end
       end
