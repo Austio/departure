@@ -187,8 +187,8 @@ module ActiveRecord
             if result.is_a? Process::Status
               notification_payload[:exit_code] = result.exitstatus
               notification_payload[:exit_pid] = result.pid
-            else
-              notification_payload[:row_count] = result&.size || 0
+            elsif result.respond_to?(:size)
+              notification_payload[:row_count] = result.size
             end
             result
           end
