@@ -76,7 +76,7 @@ module ActiveRecord
 
       def exec_delete(sql, name, binds)
         execute(to_sql(sql, binds), name)
-        @raw_connection.affected_rows
+        raw_connection.affected_rows
       end
       alias exec_update exec_delete
 
@@ -155,110 +155,25 @@ module ActiveRecord
       end
 
       def get_full_version # rubocop:disable Style/AccessorMethodName
-        @get_full_version ||= @raw_connection.database_adapter.get_database_version.full_version_string
+        @get_full_version ||= raw_connection.database_adapter.get_database_version.full_version_string
       end
 
       def last_inserted_id(result)
-        @raw_connection.database_adapter.send(:last_inserted_id, result)
-      end
-
-      # Mostly a copy from ActiveRecord::ConnectionAdapters::MySQL::SchemaStatements
-      # original method was not returning index names due to a return in each_hash
-      def indexes(table_name)
-        indexes = []
-        current_index = nil
-        execute_and_free("SHOW KEYS FROM #{quote_table_name(table_name)}", "SCHEMA") do |result|
-          # This is the root line change, the underlying definition ought yield to the block but it was not returning
-          # connection definition is this
-          #From: activerecord-7.2.2.1/lib/active_record/connection_adapters/mysql2_adapter.rb:96 ActiveRecord::ConnectionAdapters::Mysql2Adapter#each_hash:
-          #
-          #      95: def each_hash(result, &block) # :nodoc:
-          #  =>  96:   if block_given?
-          #      97:     result.each(as: :hash, symbolize_keys: true, &block)
-          #      98:   else
-          #      99:     to_enum(:each_hash, result)
-          #     100:   end
-          #     101: end
-
-          each_hash(result).each do |row|
-            if current_index != row[:Key_name]
-              next if row[:Key_name] == "PRIMARY" # skip the primary key
-              current_index = row[:Key_name]
-
-              mysql_index_type = row[:Index_type].downcase.to_sym
-              case mysql_index_type
-              when :fulltext, :spatial
-                index_type = mysql_index_type
-              when :btree, :hash
-                index_using = mysql_index_type
-              end
-
-              indexes << [
-                row[:Table],
-                row[:Key_name],
-                row[:Non_unique].to_i == 0,
-                [],
-                lengths: {},
-                orders: {},
-                type: index_type,
-                using: index_using,
-                comment: row[:Index_comment].presence
-              ]
-            end
-
-            if row[:Expression]
-              expression = row[:Expression].gsub("\\'", "'")
-              expression = +"(#{expression})" unless expression.start_with?("(")
-              indexes.last[-2] << expression
-              indexes.last[-1][:expressions] ||= {}
-              indexes.last[-1][:expressions][expression] = expression
-              indexes.last[-1][:orders][expression] = :desc if row[:Collation] == "D"
-            else
-              indexes.last[-2] << row[:Column_name]
-              indexes.last[-1][:lengths][row[:Column_name]] = row[:Sub_part].to_i if row[:Sub_part]
-              indexes.last[-1][:orders][row[:Column_name]] = :desc if row[:Collation] == "D"
-            end
-          end
-        end
-
-        indexes.map do |index|
-          options = index.pop
-
-          if expressions = options.delete(:expressions)
-            orders = options.delete(:orders)
-            lengths = options.delete(:lengths)
-
-            columns = index[-1].to_h { |name|
-              [ name.to_sym, expressions[name] || +quote_column_name(name) ]
-            }
-
-            index[-1] = add_options_for_index_columns(
-              columns, order: orders, length: lengths
-            ).values.join(", ")
-          end
-
-          IndexDefinition.new(*index, **options)
-        end
-      rescue StatementInvalid => e
-        if e.message.match?(/Table '.+' doesn't exist/)
-          []
-        else
-          raise
-        end
+        raw_connection.database_adapter.send(:last_inserted_id, result)
       end
 
       private
 
       attr_reader :mysql_adapter
 
-      def each_hash(result) # :nodoc:
-        @raw_connection.database_adapter.each_hash(result)
+      def each_hash(result, &block) # :nodoc:
+        raw_connection.database_adapter.each_hash(result, &block)
       end
 
       # Must return the MySQL error number from the exception, if the exception has an
       # error number.
       def error_number(_exception) # :nodoc:
-        @raw_connection.database_adapter.error_number(_exception)
+        raw_connection.database_adapter.error_number(_exception)
       end
 
       def raw_execute(sql, name, async: false, allow_retry: false, materialize_transactions: true)
@@ -278,6 +193,12 @@ module ActiveRecord
             result
           end
         end
+      end
+
+      def raw_connection
+        return @raw_connection if @raw_connection
+
+        connect
       end
 
       def connect
