@@ -41,6 +41,10 @@ class TestDatabase
     drop_and_create_comments_table
   end
 
+  def conn
+    ActiveRecord::Base.connection
+  end
+
   private
 
   attr_reader :config, :database
@@ -68,14 +72,5 @@ class TestDatabase
     conn.execute('START TRANSACTION')
     sql.each { |str| conn.execute(str) }
     conn.execute('COMMIT')
-  end
-
-  def conn
-    @conn ||= Departure::RailsIntegrator.for_current.create_connection_adapter(
-      host: @config['hostname'],
-      username: @config['username'],
-      password: @config['password'],
-      reconnect: true
-    )
   end
 end

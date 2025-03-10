@@ -55,7 +55,6 @@ RSpec.configure do |config|
   config.before(:each) do |example|
     if example.metadata[:integration]
       test_database.setup
-      ActiveRecord::Base.connection_pool.disconnect!
     end
   end
 

@@ -151,11 +151,13 @@ module ActiveRecord
       end
 
       def full_version
-        @full_version ||= get_full_version
+        get_full_version
       end
 
       def get_full_version # rubocop:disable Style/AccessorMethodName
-        @get_full_version ||= @raw_connection.database_adapter.get_database_version.full_version_string
+        return @get_full_version if defined? @get_full_version
+
+        @get_full_version = @raw_connection.database_adapter.get_database_version.full_version_string
       end
 
       def last_inserted_id(result)
