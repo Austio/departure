@@ -9,24 +9,19 @@ describe Departure, integration: true do
     context 'adding indexes' do
       let(:direction) { :up }
 
-      before do
-      end
-
       it 'executes the percona command' do
-        reset_database!
-        run_db_migrate(direction, 1)
-
+        migration_context.up(1)
         expect_percona_command('ADD INDEX `index_comments_on_some_id_field` (`some_id_field`)')
 
-        run_db_migrate(direction, version)
-
+        migration_context.up(version)
+        binding.pry
         expect(:comments).to have_index('index_comments_on_some_id_field')
       end
 
       it 'marks the migration as up' do
-        migration_context.run(direction, version)
+        run_db_migrate(direction, version)
 
-        expect(migration_context.current_version).to eq(version)
+        expect(migrations_current_version).to eq(version)
       end
     end
 

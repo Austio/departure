@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define do
-  create_table 'comments', charset: 'utf8mb3', collation: 'utf8mb3_unicode_ci', force: :cascade do |t|
+ActiveRecord::Schema[7.1].define(version: 2) do
+  create_table "comments", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
+    t.bigint "some_id_field"
+    t.index ["some_id_field"], name: "index_comments_on_some_id_field"
   end
+
 end
