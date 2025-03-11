@@ -1,12 +1,6 @@
 require 'spec_helper'
 
 describe Departure, integration: true do
-  class Comment < ActiveRecord::Base; end
-
-  let(:migration_context) do
-    ActiveRecord::MigrationContext.new([MIGRATION_FIXTURES], ActiveRecord::SchemaMigration)
-  end
-
   let(:direction) { :up }
 
   context 'managing indexes' do
@@ -16,13 +10,15 @@ describe Departure, integration: true do
       let(:direction) { :up }
 
       before do
-        migration_context.run(direction, 1)
       end
 
       it 'executes the percona command' do
+        reset_database!
+        run_db_migrate(direction, 1)
+
         expect_percona_command('ADD INDEX `index_comments_on_some_id_field` (`some_id_field`)')
 
-        migration_context.run(direction, version)
+        run_db_migrate(direction, version)
 
         expect(:comments).to have_index('index_comments_on_some_id_field')
       end

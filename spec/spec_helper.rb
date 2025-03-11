@@ -2,45 +2,31 @@ require 'bundler'
 require 'simplecov'
 SimpleCov.start
 
+require 'bundler/setup'
+require 'departure'
+require 'rails'
+require 'rake'
+
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-Bundler.require(:default, :development)
+# Load Dummy Application - schema.rb holds the schema for the test database
+RAILS_ENV = 'test'
+require File.expand_path('./dummy/config/environment.rb', __dir__)
+require 'rspec/rails'
 
-require './configuration'
-require './test_database'
-
-require 'departure'
 require 'lhm'
 
-require 'support/matchers/have_column'
-require 'support/matchers/have_index'
-require 'support/matchers/have_foreign_key_on'
-require 'support/shared_examples/column_definition_method'
-require 'support/table_methods'
 
-db_config = Configuration.new
-
-# Disables/enables the queries log you see in your rails server in dev mode
-fd = ENV['VERBOSE'] ? STDOUT : '/dev/null'
-ActiveRecord::Base.logger = Logger.new(fd)
-
-ActiveRecord::Base.establish_connection(
-  adapter: 'percona',
-  host: db_config['hostname'],
-  username: db_config['username'],
-  password: db_config['password'],
-  database: db_config['database']
-)
-
-MIGRATION_FIXTURES = File.expand_path('../dummy/db/migrate/', __FILE__)
-
-test_database = TestDatabase.new(db_config)
+# Require all support files
+Dir[File.join(__dir__, 'support', '**', '*.rb')].each { |f| require f }
+Rails.application.load_tasks
 
 RSpec.configure do |config|
   config.include TableMethods
+  config.include MigrationMethods
   config.filter_run_when_matching :focus
 
-  ActiveRecord::Migration.verbose = false
+  ActiveRecord::Migration.verbose = true
 
   # Needs an empty block to initialize the config with the default values
   Departure.configure do |_config|
@@ -50,25 +36,14 @@ RSpec.configure do |config|
   # see the state of the previous one
   config.before(:each) do |example|
     if example.metadata[:integration]
-      test_database.setup
-      ActiveRecord::Base.connection_pool.disconnect!
+
     end
   end
+
+  # We manually reset the db each time
+  config.use_transactional_fixtures = false
 
   config.order = :random
 
   Kernel.srand config.seed
-end
-
-# This shim is for Rails 7.1 compatibility in the test
-module Rails7Compatibility
-  module MigrationContext
-    def initialize(migrations_paths, schema_migration = nil)
-      super(migrations_paths)
-    end
-  end
-end
-
-if ActiveRecord::VERSION::STRING >= '7.1'
-  ActiveRecord::MigrationContext.send :prepend, Rails7Compatibility::MigrationContext
 end
