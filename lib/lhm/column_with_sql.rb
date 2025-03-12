@@ -9,8 +9,12 @@ module Lhm
     # Returns the column's class to be used
     #
     # @return [Constant]
-    def self.column_factory
-      ::ActiveRecord::ConnectionAdapters::DepartureAdapter::Column
+    def self.column_factory_for(ar_version)
+      if ar_version::MAJOR >= 7 && ar_version::MINOR >= 2
+        ::ActiveRecord::ConnectionAdapters::Rails72DepartureAdapter::Column
+      else
+        ::ActiveRecord::ConnectionAdapters::DepartureAdapter::Column
+      end
     end
 
     # Constructor
@@ -59,7 +63,7 @@ module Lhm
         limit: cast_type.limit
       )
       mysql_metadata = ActiveRecord::ConnectionAdapters::MySQL::TypeMetadata.new(metadata)
-      @column ||= self.class.column_factory.new(
+      @column ||= self.class.column_factory_for(ActiveRecord::VERSION).new(
         name,
         default_value,
         mysql_metadata,

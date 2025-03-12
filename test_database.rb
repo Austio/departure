@@ -1,11 +1,23 @@
 require 'active_record'
 require 'active_record/connection_adapters/mysql2_adapter'
+require 'departure'
 
 # Setups the test database with the schema_migrations table that ActiveRecord
 # requires for the migrations, plus a table for the Comment model used throught
 # the tests.
 #
 class TestDatabase
+  def self.audit
+    result = ActiveRecord::Base.connection.execute('SHOW TABLES;')
+    puts "Tables in the database: #{result.to_a}"
+
+    result = ActiveRecord::Base.connection.execute('SHOW COLUMNS FROM comments;')
+    puts "Columns in the comments table: #{result.to_a}"
+
+    result = ActiveRecord::Base.connection.execute('SHOW INDEXES FROM comments;')
+    puts "Indexes in the comments table: #{result.to_a}"
+  end
+
   # Constructor
   #
   # @param config [Hash]
@@ -18,7 +30,8 @@ class TestDatabase
   # It drops any of them if they already exist
   def setup
     setup_test_database
-    drop_and_create_schema_migrations_table
+    conn.pool.try(:internal_metadata)&.create_table
+    conn.pool.try(:schema_migration)&.create_table
   end
 
   # Creates the #{@database} database and the comments table in it.
@@ -28,16 +41,8 @@ class TestDatabase
     drop_and_create_comments_table
   end
 
-  # Creates the ActiveRecord's schema_migrations table required for
-  # migrations to work. Before, it drops the table if it already exists
-  def drop_and_create_schema_migrations_table
-    sql = [
-      "USE #{@database}",
-      'DROP TABLE IF EXISTS schema_migrations',
-      'CREATE TABLE schema_migrations ( version varchar(255) COLLATE utf8_unicode_ci NOT NULL, UNIQUE KEY unique_schema_migrations (version)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci'
-    ]
-
-    run_commands(sql)
+  def conn
+    ActiveRecord::Base.connection
   end
 
   private
@@ -67,14 +72,5 @@ class TestDatabase
     conn.execute('START TRANSACTION')
     sql.each { |str| conn.execute(str) }
     conn.execute('COMMIT')
-  end
-
-  def conn
-    @conn ||= ActiveRecord::Base.mysql2_connection(
-      host: @config['hostname'],
-      username: @config['username'],
-      password: @config['password'],
-      reconnect: true
-    )
   end
 end

@@ -1,5 +1,7 @@
+require 'pry'
+require 'bundler'
 require 'simplecov'
-SimpleCov.start
+# SimpleCov.start
 
 ENV['RAILS_ENV'] ||= 'development'
 
@@ -23,6 +25,9 @@ db_config = Configuration.new
 
 # Disables/enables the queries log you see in your rails server in dev mode
 fd = ENV['VERBOSE'] ? STDOUT : '/dev/null'
+
+Departure::RailsIntegrator.for_current.register_integrations
+
 ActiveRecord::Base.logger = Logger.new(fd)
 
 ActiveRecord::Base.establish_connection(
@@ -50,10 +55,7 @@ RSpec.configure do |config|
   # Cleans up the database before each example, so the current example doesn't
   # see the state of the previous one
   config.before(:each) do |example|
-    if example.metadata[:integration]
-      test_database.setup
-      ActiveRecord::Base.connection_pool.disconnect!
-    end
+    test_database.setup if example.metadata[:integration]
   end
 
   config.order = :random
