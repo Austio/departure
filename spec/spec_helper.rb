@@ -21,13 +21,12 @@ require 'support/matchers/have_foreign_key_on'
 require 'support/shared_examples/column_definition_method'
 require 'support/table_methods'
 
+Departure::RailsAdapter.for_current.register_integrations
+
 db_config = Configuration.new
 
 # Disables/enables the queries log you see in your rails server in dev mode
 fd = ENV['VERBOSE'] ? STDOUT : '/dev/null'
-
-Departure::RailsIntegrator.for_current.register_integrations
-
 ActiveRecord::Base.logger = Logger.new(fd)
 
 ActiveRecord::Base.establish_connection(
@@ -50,6 +49,16 @@ RSpec.configure do |config|
 
   # Needs an empty block to initialize the config with the default values
   Departure.configure do |_config|
+  end
+
+  if ActiveRecord::VERSION::STRING >= '7.2'
+    config.around(:each) do |example|
+      if example.metadata[:rails_7_2_skip]
+        example.skip
+      else
+        example.run
+      end
+    end
   end
 
   # Cleans up the database before each example, so the current example doesn't
