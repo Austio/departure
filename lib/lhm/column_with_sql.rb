@@ -10,11 +10,11 @@ module Lhm
     #
     # @return [Constant]
     def self.column_factory_for(ar_version)
-        if ar_version::MAJOR >= 7 && ar_version::MINOR >= 2
-          ::ActiveRecord::ConnectionAdapters::Rails72DepartureAdapter::Column
-        else
-          ::ActiveRecord::ConnectionAdapters::DepartureAdapter::Column
-        end
+      if ar_version::MAJOR >= 7 && ar_version::MINOR >= 2
+        ::ActiveRecord::ConnectionAdapters::Rails72DepartureAdapter::Column
+      else
+        ::ActiveRecord::ConnectionAdapters::DepartureAdapter::Column
+      end
     end
 
     # Constructor
