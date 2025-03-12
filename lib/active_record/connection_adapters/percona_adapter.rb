@@ -1,8 +1,8 @@
 require 'active_record/connection_adapters/abstract_mysql_adapter'
 require 'active_record/connection_adapters/statement_pool'
 require 'active_record/connection_adapters/mysql2_adapter'
+require 'active_record/connection_adapters/patch_connection_handling'
 require 'active_support/core_ext/string/filters'
-require_relative './patch_connection_handling'
 require 'departure'
 require 'forwardable'
 
