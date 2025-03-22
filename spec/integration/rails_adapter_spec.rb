@@ -2,10 +2,9 @@ require 'spec_helper'
 
 RSpec.describe Departure::RailsAdapter, integration: true do
   describe 'advisory_lock patch' do
-    before(:each) do
-      # We have to force a reconnection in order to get a migration error when we switch adapters
-      establish_mysql_connection
-    end
+    # We have to force a reconnection in order to get a migration error when we switch adapters
+    before(:each) { establish_mysql_connection }
+    after(:each) { establish_percona_connection }
 
     def run_a_migration
       migration_context = ActiveRecord::MigrationContext.new([MIGRATION_FIXTURES], ActiveRecord::SchemaMigration)

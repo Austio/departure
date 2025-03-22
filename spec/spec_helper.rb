@@ -28,13 +28,16 @@ db_config = Configuration.new
 fd = ENV['VERBOSE'] ? STDOUT : '/dev/null'
 ActiveRecord::Base.logger = Logger.new(fd)
 
-ActiveRecord::Base.establish_connection(
-  adapter: 'percona',
-  host: db_config['hostname'],
-  username: db_config['username'],
-  password: db_config['password'],
-  database: db_config['database']
-)
+def establish_percona_connection
+  db_config = Configuration.new
+  ActiveRecord::Base.establish_connection(
+    adapter: 'percona',
+    host: db_config['hostname'],
+    username: db_config['username'],
+    password: db_config['password'],
+    database: db_config['database']
+  )
+end
 
 def establish_mysql_connection
   db_config = Configuration.new
@@ -47,6 +50,8 @@ def establish_mysql_connection
     database: db_config['database']
   )
 end
+
+establish_percona_connection
 
 MIGRATION_FIXTURES = File.expand_path('../dummy/db/migrate/', __FILE__)
 

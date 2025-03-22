@@ -78,7 +78,6 @@ module Departure
       class << self
         def register_integrations
           require 'active_record/connection_adapters/rails_7_2_departure_adapter'
-          require 'departure/rails_7_2/active_record_advisory_lock_patch'
 
           ActiveSupport.on_load(:active_record) do
             ActiveRecord::Migration.class_eval do
